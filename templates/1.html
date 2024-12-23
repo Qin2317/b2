@@ -2,19 +2,12 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Gamedev Phaser Workshop - lesson 16: Randomizing gameplay</title>
     <style>
         * {
             padding: 0;
             margin: 0;
-        }
-
-        #history {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
         }
     </style>
     <script src="../static/js/phaser.min.js"></script>
@@ -26,7 +19,8 @@
         <input type="text" id="name" required>
         <input type="submit" value="Submit">
     </form>
-    <div id="history"></div>
+    <div id="score-history"></div>
+
     <script>
         var game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
             preload: preload,
@@ -45,6 +39,7 @@
         var lifeLostText;
         var playing = false;
         var startButton;
+        var scoreHistory;
 
         function preload() {
             game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -55,6 +50,7 @@
             game.load.image('brick', '../static/images/brick.png');
             game.load.spritesheet('ball', '../static/images/ball.png', 20, 20);
             game.load.spritesheet('button', '../static/images/button.png', 120, 40);
+            game.load.css('styles', '../static/css/styles.css');
         }
 
         function create() {
@@ -85,6 +81,13 @@
             lifeLostText.visible = false;
             startButton = game.add.button(game.world.width * 0.5, game.world.height * 0.5, 'button', startGame, this, 1, 0, 2);
             startButton.anchor.set(0.5);
+            // 初始化历史得分区域
+            var scoreHistoryStyle = {
+                font: '16px Arial',
+                fill: '#666'
+            };
+            scoreHistory = game.add.text(5, 30, '', scoreHistoryStyle);
+            scoreHistory.anchor.set(0, 0.5);
         }
 
         function update() {
@@ -147,15 +150,11 @@
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: 'name=' + name + '&score=' + score
-                    })
-                      .then(response => response.json())
-                      .then(data => {
-                            // 处理服务器返回的历史记录数据
-                            displayHistory(data);
-                        })
-                      .then(() => {
-                            location.reload();
-                        });
+                    }).then(function () {
+                        // 将分数和名字显示在历史得分区域
+                        scoreHistory.setText(scoreHistory.text + '\n' + name + ': ' + score);
+                        document.getElementById('player-form').style.display = 'none';
+                    });
                 });
             }
         }
@@ -183,15 +182,11 @@
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: 'name=' + name + '&score=' + score
-                    })
-                      .then(response => response.json())
-                      .then(data => {
-                            // 处理服务器返回的历史记录数据
-                            displayHistory(data);
-                        })
-                      .then(() => {
-                            location.reload();
-                        });
+                    }).then(function () {
+                        // 将分数和名字显示在历史得分区域
+                        scoreHistory.setText(scoreHistory.text + '\n' + name + ': ' + score);
+                        document.getElementById('player-form').style.display = 'none';
+                    });
                 });
             }
         }
@@ -205,16 +200,6 @@
             startButton.destroy();
             ball.body.velocity.set(150, -150);
             playing = true;
-        }
-
-        function displayHistory(historyData) {
-            const historyDiv = document.getElementById('history');
-            historyDiv.innerHTML = '<h2>历史游戏得分记录</h2>';
-            historyData.forEach(entry => {
-                const p = document.createElement('p');
-                p.textContent = `姓名: ${entry.name}, 得分: ${entry.score}`;
-                historyDiv.appendChild(p);
-            });
         }
     </script>
 </body>
